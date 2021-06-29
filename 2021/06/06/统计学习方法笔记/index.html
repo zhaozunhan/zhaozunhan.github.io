@@ -28,7 +28,7 @@
 <meta property="og:description" content="《统计学习方法》的读书笔记">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-06-06T01:37:07.000Z">
-<meta property="article:modified_time" content="2021-06-09T03:38:00.450Z">
+<meta property="article:modified_time" content="2021-06-29T13:58:08.072Z">
 <meta property="article:author" content="归尘">
 <meta property="article:tag" content="机器学习">
 <meta name="twitter:card" content="summary">
@@ -77,7 +77,11 @@
   </style>
 </noscript>
 
-</head>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
 
 <body itemscope itemtype="http://schema.org/WebPage">
   <div class="container use-motion">
@@ -196,7 +200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-06-09 11:38:00" itemprop="dateModified" datetime="2021-06-09T11:38:00+08:00">2021-06-09</time>
+                <time title="修改时间：2021-06-29 21:58:08" itemprop="dateModified" datetime="2021-06-29T21:58:08+08:00">2021-06-29</time>
               </span>
 
           
@@ -224,9 +228,9 @@
 <h2 id="1-2-统计学习的分类"><a href="#1-2-统计学习的分类" class="headerlink" title="1.2 统计学习的分类"></a>1.2 统计学习的分类</h2><h3 id="1-2-1-基本分类"><a href="#1-2-1-基本分类" class="headerlink" title="1.2.1 基本分类"></a>1.2.1 基本分类</h3><p>​    统计学习或者机器学习一般包括监督学习、无监督学习、强化学习。有时还包括半监督学习、主动学习。</p>
 <h4 id="监督学习"><a href="#监督学习" class="headerlink" title="监督学习"></a>监督学习</h4><p>​    监督学习是指从标注数据中学习预测模型的机器学习问题。标注数据表示输入和输出的对应关系，预测模型对给定的输入产生相应的输出。监督学习的本质是学习输入到输出的映射的统计规律。通俗理解就是监督学习面向的数据集是已经标注好的数据集，然后通过已经标注好的测试集进行验证。</p>
 <p>​    在监督学习中输入与输出所有可能取值的集合称为输入空间与输出空间。输入的实例用特征向量表示，所有特征向量存在的空间成为特征空间。输入变量记为$X$,输出变量记为$Y$,取值用小写字幕表示，输入变量的取值记为$x$,输出变量的取值记为$y$。输入变量的第$i$个变量记作：</p>
-<p>​                                                        $$x_i = (x_i^{(1)},x_i^{(2)}, \cdots,x_i^{(i)}, \cdots,x_i^{(n)})^T$$</p>
+<p>​                                                        <script type="math/tex">x_i = (x_i^{(1)},x_i^{(2)}, \cdots,x_i^{(i)}, \cdots,x_i^{(n)})^T</script></p>
 <p>训练集表示为:</p>
-<p>​                                                       $$T = {(x_1, y_1), (x_2, y_2), \cdots, (x_N, y_N)}$$</p>
+<p>​                                                       <script type="math/tex">T = {(x_1, y_1), (x_2, y_2), \cdots, (x_N, y_N)}</script></p>
 <p>​    输入变量$X$和输出变量$Y$有不同的类型，可以是连续的，也可以是离散的。人们根据输入输出变量的不同类型，对预测任务给予不同的名称: 输入变量与输出变量均为连续变量的预测问题称为回归问题；输出变量为有限个离散变量的预测问题称为分类问题；输入变量与输出变量均为变量序列的预测问题称为标注问题。</p>
 <p>​    监督学习假设输入与输出的随机变量$X$和$Y$遵循联合概率分布$P(X, Y)$, $P(X,Y)$表示分布函数。监督学习的目的在于学习一个由输入到输出的映射，映射由模型来表示，映射的集合就是假设空间。监督学习的模型可以是概率模型和非概率模型，由条件概率分布$P(Y|X)$或决策函数$Y=f(X)$表示，针对对具体的输入，可以写作$P(y|x)$或者$y = f(x)$。</p>
 <p>​    监督学习分为学习和预测两个过程，学习到的模型表示为条件概率分布$\hat P(Y|X)$或决策函数$Y = \hat f(X)$,在预测过程中，预测系统对于给定的测试样本集中的输入$x_{N + 1}$,由模型$y_{N + 1} = arg \mathop{max}\limits_{y} \hat P(y | x_{N + 1})$或$y_{N + 1} = \hat f(x_{N + 1})$ 给出对应的输出$y_{N + 1}$.学习系统通过不断尝试，选取最好都模型，也就是使训练样本输出$y_i$和模型输出$f(x_i)$的差足够小。</p>
@@ -239,13 +243,22 @@
 <h4 id="参数化模型和非参数化模型"><a href="#参数化模型和非参数化模型" class="headerlink" title="参数化模型和非参数化模型"></a>参数化模型和非参数化模型</h4><p>​    参数化模型假设模型参数的维度固定，模型可以由有限维参数完全刻画，非参数化模型假设模型参数的维度不固定或者说无穷大，随着训练数据量的增加而不断增大。</p>
 <h3 id="1-2-3-按算法分类"><a href="#1-2-3-按算法分类" class="headerlink" title="1.2.3 按算法分类"></a>1.2.3 按算法分类</h3><p>​    可以分为在线学习与批量学习。在线学习是指每次接受一个样本，进行预测，之后学习模型，并不断重复该操作的机器学习。批量学习一次接受所有数据，学习模型，之后进行预测。强化学习本身拥有在线学习的特点。</p>
 <h3 id="1-2-4-按技巧分类"><a href="#1-2-4-按技巧分类" class="headerlink" title="1.2.4 按技巧分类"></a>1.2.4 按技巧分类</h3><h4 id="贝叶斯学习"><a href="#贝叶斯学习" class="headerlink" title="贝叶斯学习"></a>贝叶斯学习</h4><h4 id="核方法"><a href="#核方法" class="headerlink" title="核方法"></a>核方法</h4><p>核方法是使用核函数表示和学习非线性模型的一种机器学习方法，可以用于监督学习和无监督学习。</p>
-<h2 id="1-3-统计学习方法的三要素"><a href="#1-3-统计学习方法的三要素" class="headerlink" title="1.3 统计学习方法的三要素"></a>1.3 统计学习方法的三要素</h2><h3 id="1-3-1-模型"><a href="#1-3-1-模型" class="headerlink" title="1.3.1 模型"></a>1.3.1 模型</h3><p>在监督学习过程中，模型是所要学习的条件概率分布或决策函数，模型的假设空间包含所有可能的条件概率分布或决策函数。假设空间可以定义为决策函数的集合$\mathcal{F} = {f | Y = f(X) }$,这时$\mathcal{F}$通常是一个参数向量决定的函数族：</p>
-<p>$\mathcal{F} = {f | Y = f_\theta(X),\theta \in R^n }$,其中$\theta$取值于$n$维欧氏空间$R^n$,称为参数空间。 假设空间还可以定义为条件概率的集合，$\mathcal{F} = { P | P(Y|X)}$,这时$\mathcal{F}$通常是由一个参数向量决定的条件概率分布族：$\mathcal{F} = {P|P_\theta(Y|X), \theta \in R^n}$,其中$\theta$取值于$n$维欧氏空间$R^n$,也称为参数空间。</p>
-<h3 id="1-3-2-策略"><a href="#1-3-2-策略" class="headerlink" title="1.3.2 策略"></a>1.3.2 策略</h3><h4 id="损失函数与风险函数"><a href="#损失函数与风险函数" class="headerlink" title="损失函数与风险函数"></a>损失函数与风险函数</h4><h5 id="0-1损失函数（0-1-loss-function"><a href="#0-1损失函数（0-1-loss-function" class="headerlink" title="0-1损失函数（0-1 loss function)"></a>0-1损失函数（0-1 loss function)</h5><p>$$<br>\begin{equation}<br>L(Y, f(X)) =  \begin{cases}<br>1, &amp; Y \not = f(X) \<br>0, &amp; Y = f(X)<br>\end{cases}<br>\end{equation}<br>$$</p>
-<h5 id="平方损失函数（quadratic-loss-function"><a href="#平方损失函数（quadratic-loss-function" class="headerlink" title="平方损失函数（quadratic loss function)"></a>平方损失函数（quadratic loss function)</h5><p>$$<br>L(Y, f(X)) = (Y - f(X)) ^ 2<br>$$</p>
-<h5 id="绝对损失函数-absolute-loss-function"><a href="#绝对损失函数-absolute-loss-function" class="headerlink" title="绝对损失函数 (absolute loss function)"></a>绝对损失函数 (absolute loss function)</h5><p>$$<br>L(Y, f(X)) = |Y - f(X)|<br>$$</p>
-<h5 id="对数损失函数-logarithmic-loss-function-或对数似然损失函数-log-likelihood-loss-function"><a href="#对数损失函数-logarithmic-loss-function-或对数似然损失函数-log-likelihood-loss-function" class="headerlink" title="对数损失函数 (logarithmic loss function) 或对数似然损失函数(log-likelihood loss function)"></a>对数损失函数 (logarithmic loss function) 或对数似然损失函数(log-likelihood loss function)</h5><p>$$<br>L(Y, P(Y|X)) = -logP(Y|X)<br>$$</p>
-<p>​    损失的函数值越小，模型就越好。损失函数的期望是<br>$$<br>R_{exp}(f) = E_p[L(Y, f(X))] = \int_{\mathcal{X} \times \mathcal{Y}} L(y, f(x))P(x, y)dxdy<br>$$<br>​    模型$f(X)$关于训练集的平均损失称为经验风险，或经验损失,记为$R_{emp}$<br>$$<br>R_{emp}(f) = \frac{1}{N} \sum ^{N} _ {i = 1} L (y_i, f(x_i))<br>$$<br>​    我们学习是为了选取期望损失最小的模型，但是联合分布是未知的，根据大数定律，当样本容量趋于无穷时，经验风险趋于期望风险。因此，可以用经验风险估计期望风险。但是现实中的样本训练数目有限，甚至很小，所以用经验风险估计期望风险常常不理想，需要对经验风险进行一定的矫正。由此引出监督学习的两个基本策略，经验风险最小化和结构风险最小化。</p>
+<h2 id="1-3-统计学习方法的三要素"><a href="#1-3-统计学习方法的三要素" class="headerlink" title="1.3 统计学习方法的三要素"></a>1.3 统计学习方法的三要素</h2><h3 id="1-3-1-模型"><a href="#1-3-1-模型" class="headerlink" title="1.3.1 模型"></a>1.3.1 模型</h3><p>在监督学习过程中，模型是所要学习的条件概率分布或决策函数，模型的假设空间包含所有可能的条件概率分布或决策函数。假设空间可以定义为决策函数的集合$\mathcal{F} = \{f | Y = f(X) \}$,这时$\mathcal{F}$通常是一个参数向量决定的函数族：</p>
+<p>$\mathcal{F} = \{f | Y = f_\theta(X),\theta \in R^n \}$,其中$\theta$取值于$n$维欧氏空间$R^n$,称为参数空间。 假设空间还可以定义为条件概率的集合，$\mathcal{F} = \{ P | P(Y|X)\}$,这时$\mathcal{F}$通常是由一个参数向量决定的条件概率分布族：$\mathcal{F} = \{P|P_\theta(Y|X), \theta \in R^n\}$,其中$\theta$取值于$n$维欧氏空间$R^n$,也称为参数空间。</p>
+<h3 id="1-3-2-策略"><a href="#1-3-2-策略" class="headerlink" title="1.3.2 策略"></a>1.3.2 策略</h3><h4 id="损失函数与风险函数"><a href="#损失函数与风险函数" class="headerlink" title="损失函数与风险函数"></a>损失函数与风险函数</h4><h5 id="0-1损失函数（0-1-loss-function"><a href="#0-1损失函数（0-1-loss-function" class="headerlink" title="0-1损失函数（0-1 loss function)"></a>0-1损失函数（0-1 loss function)</h5><script type="math/tex; mode=display">
+\begin{equation}
+L(Y, f(X)) =  \begin{cases}
+1, & Y \not = f(X) \\
+0, & Y = f(X)
+\end{cases}
+\end{equation}</script><h5 id="平方损失函数（quadratic-loss-function"><a href="#平方损失函数（quadratic-loss-function" class="headerlink" title="平方损失函数（quadratic loss function)"></a>平方损失函数（quadratic loss function)</h5><script type="math/tex; mode=display">
+L(Y, f(X)) = (Y - f(X)) ^ 2</script><h5 id="绝对损失函数-absolute-loss-function"><a href="#绝对损失函数-absolute-loss-function" class="headerlink" title="绝对损失函数 (absolute loss function)"></a>绝对损失函数 (absolute loss function)</h5><script type="math/tex; mode=display">
+L(Y, f(X)) = |Y - f(X)|</script><h5 id="对数损失函数-logarithmic-loss-function-或对数似然损失函数-log-likelihood-loss-function"><a href="#对数损失函数-logarithmic-loss-function-或对数似然损失函数-log-likelihood-loss-function" class="headerlink" title="对数损失函数 (logarithmic loss function) 或对数似然损失函数(log-likelihood loss function)"></a>对数损失函数 (logarithmic loss function) 或对数似然损失函数(log-likelihood loss function)</h5><script type="math/tex; mode=display">
+L(Y, P(Y|X)) = -logP(Y|X)</script><p>​    损失的函数值越小，模型就越好。损失函数的期望是</p>
+<script type="math/tex; mode=display">
+R_{exp}(f) = E_p[L(Y, f(X))] = \int_{\mathcal{X} \times \mathcal{Y}} L(y, f(x))P(x, y)dxdy</script><p>​    模型$f(X)$关于训练集的平均损失称为经验风险，或经验损失,记为$R_{emp}$</p>
+<script type="math/tex; mode=display">
+R_{emp}(f) = \frac{1}{N} \sum ^{N} _ {i = 1} L (y_i, f(x_i))</script><p>​    我们学习是为了选取期望损失最小的模型，但是联合分布是未知的，根据大数定律，当样本容量趋于无穷时，经验风险趋于期望风险。因此，可以用经验风险估计期望风险。但是现实中的样本训练数目有限，甚至很小，所以用经验风险估计期望风险常常不理想，需要对经验风险进行一定的矫正。由此引出监督学习的两个基本策略，经验风险最小化和结构风险最小化。</p>
 <h4 id="经验风险最小化和结构风险最小化"><a href="#经验风险最小化和结构风险最小化" class="headerlink" title="经验风险最小化和结构风险最小化"></a>经验风险最小化和结构风险最小化</h4><p>​    经验风险最小化(empirical risk minimization, ERM)的策略认为，经验风险最小的模型就是最优的模型，在样本容量足够大时，经验风险最小化能保证有很好的学习效果，在现实中被广泛采用，极大似然估计就是一个例子。当模型是条件概率分布、损失函数是对数损失函数时，经验风险最小化就等价于极大似然估计。</p>
 
     </div>
@@ -471,6 +484,61 @@
 
 
   
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
 
   
 
