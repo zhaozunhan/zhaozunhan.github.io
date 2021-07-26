@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhaozunhan.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一些推理和代码实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k近邻法">
+<meta property="og:url" content="http://zhaozunhan.github.io/2021/07/17/k%E8%BF%91%E9%82%BB%E6%B3%95/index.html">
+<meta property="og:site_name" content="zzh&#39;s blog">
+<meta property="og:description" content="一些推理和代码实现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zhaozunhan.github.io/images/3.png">
+<meta property="og:image" content="http://zhaozunhan.github.io/images/4.png">
+<meta property="article:published_time" content="2021-07-16T23:53:44.000Z">
+<meta property="article:modified_time" content="2021-07-18T02:55:04.715Z">
+<meta property="article:author" content="归尘">
+<meta property="article:tag" content="机器学习">
+<meta property="article:tag" content="k近邻法">
+<meta property="article:tag" content="Python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zhaozunhan.github.io/images/3.png">
+
+<link rel="canonical" href="http://zhaozunhan.github.io/2021/07/17/k%E8%BF%91%E9%82%BB%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>k近邻法 | zzh's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zzh's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zhaozunhan.github.io/2021/07/17/k%E8%BF%91%E9%82%BB%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="归尘">
+      <meta itemprop="description" content="每天记录一点点">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zzh's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          k近邻法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-07-17 07:53:44" itemprop="dateCreated datePublished" datetime="2021-07-17T07:53:44+08:00">2021-07-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-18 10:55:04" itemprop="dateModified" datetime="2021-07-18T10:55:04+08:00">2021-07-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">一些推理和代码实现</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="K近邻法"><a href="#K近邻法" class="headerlink" title="K近邻法"></a>K近邻法</h1><p>​    k近邻法(k-nearest neighbor, k-NN)是一种基本分类与回归方法，这里只讨论分类问题中的k近邻法。k近邻法实际上利用训练数据集对特征向量空间进行划分，并作为其分类的模型，k值的选择、距离度量及分类决策规则是k近邻法的三个基本要素。</p>
+<h2 id="1-k-近邻算法"><a href="#1-k-近邻算法" class="headerlink" title="1 $k$近邻算法"></a>1 $k$近邻算法</h2><p>输入：训练数据集</p>
+<script type="math/tex; mode=display">
+T = \{(x_1, y_1), (x_2, y_2), \cdots, (x_N, y_N)\}</script><p>其中， $x_i \in \mathcal{X} \subseteq R^n$为实例的特征向量，$y_i \in \mathcal{Y} = \{c_1, c_2,  \cdots, c_K\}$为实例的类别，$i = 1, 2, \cdots, N;$</p>
+<p>实例特征向量$x$;</p>
+<p>输出：$x$所属的类$y$。</p>
+<ol>
+<li><p>根据给定的距离度量，在$T$中找出与$x$最邻近的$k$个点，涵盖这$k$个点的$x$的邻域记作$N_k(x)$;</p>
+</li>
+<li><p>在$N_k(x)$中根据分类决策规则（如多数表决）决定$x$的类别$y$.</p>
+<script type="math/tex; mode=display">
+y = \mathop{argmax}_{c_j} \sum_{x_i \in N_k(x)} I(y_i = c_j), i = 1, 2, \cdots,N;j = 1, 2, \cdots, K</script><p>$I$为指示函数，当$y_i = c_j$时$I$为1，否则为0。</p>
+<p>$k$近邻法的特殊情况是$k = 1$的情况时，对于输入的实例点$x$,最近邻法将训练数据集中与$x$最邻近的点的类作为$x$的类。$k$近邻法没有显示的学习过程。</p>
+</li>
+</ol>
+<h2 id="2-k-近邻模型"><a href="#2-k-近邻模型" class="headerlink" title="2 $k$近邻模型"></a>2 $k$近邻模型</h2><h3 id="2-1-模型"><a href="#2-1-模型" class="headerlink" title="2.1 模型"></a>2.1 模型</h3><p>​    对于每个训练实例点$x_i$,距离该点比其他点更近的所有点组成一个区域，叫做单元。每个训练实例点拥有一个单元，所有训练实例点的单元构成对特征空间的一个划分。最近邻法将实例$x_i$的类$y_i$作为其单元中所有点的类标记。</p>
+<h3 id="2-2-距离度量"><a href="#2-2-距离度量" class="headerlink" title="2.2 距离度量"></a>2.2 距离度量</h3><script type="math/tex; mode=display">
+L_p(x_i, x_j) = (\sum^{n}_{l = 1}|x_i^{(l)} - x_j^{(l)}|) ^ {\frac{1}{p}}</script><p>$p \geq 1$,当$p = 2$时，称为欧式距离，$p = 1$时，称为曼哈顿距离，$p = \infty$时，是各个坐标啊距离的最大值。</p>
+<h3 id="2-3-k-值的选择"><a href="#2-3-k-值的选择" class="headerlink" title="2.3 $k$值的选择"></a>2.3 $k$值的选择</h3><p>​    如果选择较小的$k$值，近似误差会减小，只有与输入实例较近的训练实例才会起作用。缺点是估计误差大，预测结果会对近邻的实例点非常敏感。$k$值的减小就意味着整体模型变得复杂，容易发生过拟合</p>
+<p>​    $k$值选择较大，可以减少估计误差，缺点是近似误差会增大，与输入实例较远的训练实例也会对预测起作用，使预测发生错误。$k$值的增大会使整体模型变得简单。</p>
+<p>​    $k = N$时，无论输入实例是什么，都会将它预测为在训练实例中最多的类，模型过于简单。在应用时，一般取一个比较小的数值$k$,通常采用交叉验证法来选取最优的$k$值。</p>
+<h3 id="2-4-分类决策规则"><a href="#2-4-分类决策规则" class="headerlink" title="2.4 分类决策规则"></a>2.4 分类决策规则</h3><p>​    分类的损失函数为$0-1$损失函数时，误分类的概率是</p>
+<script type="math/tex; mode=display">
+P(Y \not = f(X)) = 1 - P(Y = f(X))</script><p>对给定的$x \in \mathcal{X}$,其最邻近的$k$个训练实例点构成集合$N_k(x)$。如果涵盖$N_k(x)$的区域的类别是$c_j$,那么误分类概率是</p>
+<script type="math/tex; mode=display">
+\frac{1}{k} \sum_{x_i \in N_k(x)} I(y_i \not = c_j) = 1 - \frac{1}{k}\sum_{x_i \in N_k(x)}I(y_i = c_j)</script><h2 id="3-kd-树"><a href="#3-kd-树" class="headerlink" title="3 $kd$树"></a>3 $kd$树</h2><p>​    $k$近邻法最简单的实现是线性扫描，当训练集很大时，计算非常耗时，这种方法不可行，为了提高$k$近邻搜索的效率，可以考虑使用特殊的结构存储训练数据，以减少计算距离的次数。</p>
+<h3 id="3-1-构造-kd-树"><a href="#3-1-构造-kd-树" class="headerlink" title="3.1 构造$kd$树"></a>3.1 构造$kd$树</h3><p>​    $kd$树是一种对$k$维空间中的实例点进行存储以便对其进行快速检测到树形数据结构。$kd$树是二叉树，表示对$k$维空间的划分。构造$kd$树相当于不断地用垂直于坐标轴的超平面将$k$维空间切分，构成一系列地$k$维超矩形区域。$kd$树的每个结点对应于一个$k$维超矩形区域。</p>
+<p>​    过程：构造根节点，对应于$k$维空间所有实例点的超矩形区域，然后递归，不断切分$k$维空间，生成子节点。</p>
+<p>算法：</p>
+<p>输入：$k$维空间数据集$T = \{x_1, x_2, \cdots, x_N\}$,其中$x_i = (x_i ^ {(1)}, x_i ^ {(2)}, \cdots, x_i ^{(k)}) ^ T$,$i = 1, 2, \cdots, N$</p>
+<p>输出：$kd$树</p>
+<ol>
+<li>开始：构造根节点，选择$x^{(1)}$为坐标轴，以$T$中所有实例的$x^{(1)}$坐标的中位数为切分点，将根节点对应的超矩形区域切分为两个子区域。切分由通过切分点并与坐标轴$x ^{(1)}$垂直的超平面实现。将落在切分超平面上的实例点保存在根节点。生成深度为1的左右子节点，左子节点对应坐标$x^{(1)}$小于该切分点的子区域，右子结点对应坐标$x^{(1)}$大于切分点的子区域。</li>
+<li>重复：深度为$j$的结点，选择$x^{(l)}$为切分的坐标轴，$l = j(mod \  k) + $,1以该节点的区域中所有实例的$x^{(l)}$坐标的中位数为切分点，将该节点对应的超矩形区域切分为两个子区域。切分由通过切分点并与坐标轴$x ^{(l)}$垂直的超平面实现。生成深度为$j + 1$的左右子结点。左子节点对应坐标$x^{(l)}$小于该切分点的子区域，右子结点对应坐标$x^{(l)}$大于切分点的子区域。</li>
+<li>直到两个子区域没有实例存在时停止。</li>
+</ol>
+<h3 id="3-2-搜索-kd-树"><a href="#3-2-搜索-kd-树" class="headerlink" title="3.2 搜索$kd$树"></a>3.2 搜索$kd$树</h3><p>​    给定一个目标点，搜索其最近邻。首先找到包含目标点的叶结点，然后从该叶结点出发，依次回退到父节点；不断查找与目标点最邻近的结点，当确定不可能存在更近的结点时种植。</p>
+<p>输入：$kd$树，目标点$x$;</p>
+<p>输出：$x$的最近邻</p>
+<ol>
+<li><p>在$kd$树种找到包含目标点$x$的叶结点；从根节点出发，递归地向下访问$kd$树。若目标点$x$当前维的坐标小于切分点的坐标，则移动到左子结点，否则移动到右子结点。直到子结点为叶结点为止。</p>
+</li>
+<li><p>以此叶结点为“当前最近点”。</p>
+</li>
+<li><p>递归的向上回退，在每个结点进行以下操作：</p>
+<ul>
+<li><p>如果该结点保存的实例点比当前最近点距离目标点更近，则以该实例点为“当前最近点”。</p>
+</li>
+<li><p>当前最近点一定存在于该节点一个子结点对应的区域。检查该子结点的父结点的的另一子结点对用的区域是否有更近的点。具体地，检查另一子结点对应的区域是否以目标点为球心、以目标点与”当前最近点“间的距离为半径的超球体相交。</p>
+<p>如果相交，可能在另一子结点对应的区域内存在距目标点更近的点，移动到另一子结点上。接着，递归地进行最近邻搜索；</p>
+<p>如果不相交，向上回退。</p>
+</li>
+<li><p>当回退到根节点时，搜索结束。最后的”当前最近点“即为$x$的最近邻点。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line"></span><br><span class="line">iris = load_iris()</span><br><span class="line">df = pd.DataFrame(iris.data, columns = iris.feature_names)</span><br><span class="line">df[<span class="string">&#x27;label&#x27;</span>] = iris.target</span><br><span class="line">df.columns = [</span><br><span class="line">    <span class="string">&#x27;sepal length&#x27;</span>, <span class="string">&#x27;sepal width&#x27;</span>, <span class="string">&#x27;petal length&#x27;</span>, <span class="string">&#x27;petal width&#x27;</span>, <span class="string">&#x27;label&#x27;</span></span><br><span class="line">]</span><br><span class="line"><span class="comment"># print(data)</span></span><br><span class="line">df.label.value_counts()</span><br></pre></td></tr></table></figure>
+<pre><code>2    50
+1    50
+0    50
+Name: label, dtype: int64
+</code></pre><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data = np.array(df.iloc[:, [<span class="number">0</span>, <span class="number">1</span>, -<span class="number">1</span>]])</span><br><span class="line">x, y = data[:, :-<span class="number">1</span>], data[:, -<span class="number">1</span>]</span><br><span class="line">y = y.astype(np.<span class="built_in">int</span>)</span><br><span class="line">x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = <span class="number">0.2</span>)</span><br><span class="line"><span class="comment"># print(x, y)</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">plt.plot(x[:<span class="number">50</span>, <span class="number">0</span>], x[:<span class="number">50</span>, <span class="number">1</span>], <span class="string">&#x27;bo&#x27;</span>, label=<span class="string">&#x27;$&#123;&#125;$&#x27;</span>.<span class="built_in">format</span>(y[<span class="number">0</span>]))</span><br><span class="line">plt.plot(x[<span class="number">50</span>:<span class="number">100</span>, <span class="number">0</span>], x[<span class="number">50</span>:<span class="number">100</span>, <span class="number">1</span>], <span class="string">&#x27;go&#x27;</span>, label=<span class="string">&#x27;$&#123;&#125;$&#x27;</span>.<span class="built_in">format</span>(y[<span class="number">50</span>]))</span><br><span class="line">plt.plot(x[<span class="number">100</span>:, <span class="number">0</span>], x[<span class="number">100</span>:, <span class="number">1</span>], <span class="string">&#x27;ro&#x27;</span>, label=<span class="string">&#x27;$&#123;&#125;$&#x27;</span>.<span class="built_in">format</span>(y[<span class="number">100</span>]))</span><br><span class="line">plt.xlabel(<span class="string">&#x27;sepal length&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;sepal width&#x27;</span>)</span><br><span class="line">plt.legend()</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p><img src="/images/3.png" alt="png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Knn</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, x_train, y_train, x_test, y_test</span>):</span></span><br><span class="line">        self.x_train = x_train</span><br><span class="line">        self.y_train = y_train</span><br><span class="line">        self.x_test = x_test</span><br><span class="line">        self.y_test = y_test</span><br><span class="line">        </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">f</span>(<span class="params">self, x, n, p</span>):</span></span><br><span class="line">        <span class="comment"># np.linalg.norm 范数函数</span></span><br><span class="line">        min_list = []</span><br><span class="line">        <span class="keyword">for</span> i, j <span class="keyword">in</span> <span class="built_in">enumerate</span>(self.x_train):</span><br><span class="line">            dist = np.linalg.norm(x - j, p)</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">len</span>(min_list) &lt; n:</span><br><span class="line">                min_list += [(dist, self.y_train[i])]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                max_index = min_list.index(<span class="built_in">max</span>(min_list, key = <span class="keyword">lambda</span> x : x[<span class="number">0</span>]))</span><br><span class="line">                <span class="keyword">if</span> dist &lt; min_list[max_index][<span class="number">0</span>]:</span><br><span class="line">                    min_list[max_index] = (dist, self.y_train[i])</span><br><span class="line">        label_list = [k[-<span class="number">1</span>] <span class="keyword">for</span> k <span class="keyword">in</span> min_list]</span><br><span class="line">        count_dict = Counter(label_list)</span><br><span class="line">        max_count = <span class="built_in">sorted</span>(count_dict.items(), key = <span class="keyword">lambda</span> x : x[<span class="number">1</span>])[-<span class="number">1</span>][<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">return</span> max_count</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">test</span>(<span class="params">self, n, p</span>):</span></span><br><span class="line">        right = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> x, y <span class="keyword">in</span> <span class="built_in">zip</span>(self.x_test, self.y_test):</span><br><span class="line">            label = self.f(x, n, p)</span><br><span class="line">            <span class="keyword">if</span> label == y:</span><br><span class="line">                right += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> right / <span class="built_in">len</span>(self.x_test)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">knn = Knn(x_train, y_train, x_test, y_test)</span><br><span class="line">knn.test(<span class="number">10</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<pre><code>0.8333333333333334
+</code></pre><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">p1 = [<span class="number">5.5</span>, <span class="number">3.2</span>]</span><br><span class="line">p2 = [<span class="number">5.5</span>, <span class="number">3.4</span>]</span><br><span class="line">p3 = [<span class="number">6.5</span>, <span class="number">2.5</span>]</span><br><span class="line"><span class="comment"># plt.axis([4, 8, 1.9, 6])</span></span><br><span class="line">plt.plot(x[:<span class="number">50</span>, <span class="number">0</span>], x[:<span class="number">50</span>, <span class="number">1</span>], <span class="string">&#x27;bo&#x27;</span>, label=<span class="string">&#x27;$&#123;&#125;$&#x27;</span>.<span class="built_in">format</span>(y[<span class="number">0</span>]))</span><br><span class="line">plt.plot(x[<span class="number">50</span>:<span class="number">100</span>, <span class="number">0</span>], x[<span class="number">50</span>:<span class="number">100</span>, <span class="number">1</span>], <span class="string">&#x27;go&#x27;</span>, label=<span class="string">&#x27;$&#123;&#125;$&#x27;</span>.<span class="built_in">format</span>(y[<span class="number">50</span>]))</span><br><span class="line">plt.plot(x[<span class="number">100</span>:, <span class="number">0</span>], x[<span class="number">100</span>:, <span class="number">1</span>], <span class="string">&#x27;ro&#x27;</span>, label=<span class="string">&#x27;$&#123;&#125;$&#x27;</span>.<span class="built_in">format</span>(y[<span class="number">100</span>]))</span><br><span class="line">plt.plot(p1[<span class="number">0</span>], p1[<span class="number">1</span>], <span class="string">&#x27;bx&#x27;</span> <span class="keyword">if</span> knn.f(p1, <span class="number">10</span>, <span class="number">2</span>) == <span class="number">0</span> <span class="keyword">else</span> <span class="string">&#x27;gx&#x27;</span> <span class="keyword">if</span> knn.f(p1, <span class="number">10</span>, <span class="number">2</span>) == <span class="number">1</span> <span class="keyword">else</span> <span class="string">&#x27;rx&#x27;</span> , label=<span class="string">&#x27;test: p1&#x27;</span>)</span><br><span class="line">plt.plot(p2[<span class="number">0</span>], p2[<span class="number">1</span>], <span class="string">&#x27;bx&#x27;</span> <span class="keyword">if</span> knn.f(p2, <span class="number">10</span>, <span class="number">2</span>) == <span class="number">0</span> <span class="keyword">else</span> <span class="string">&#x27;gx&#x27;</span> <span class="keyword">if</span> knn.f(p2, <span class="number">10</span>, <span class="number">2</span>) == <span class="number">1</span> <span class="keyword">else</span> <span class="string">&#x27;rx&#x27;</span> , label=<span class="string">&#x27;test: p2&#x27;</span>)</span><br><span class="line">plt.plot(p3[<span class="number">0</span>], p3[<span class="number">1</span>], <span class="string">&#x27;bx&#x27;</span> <span class="keyword">if</span> knn.f(p3, <span class="number">10</span>, <span class="number">2</span>) == <span class="number">0</span> <span class="keyword">else</span> <span class="string">&#x27;gx&#x27;</span> <span class="keyword">if</span> knn.f(p3, <span class="number">10</span>, <span class="number">2</span>) == <span class="number">1</span> <span class="keyword">else</span> <span class="string">&#x27;rx&#x27;</span> , label=<span class="string">&#x27;test: p3&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;sepal length&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;sepal width&#x27;</span>)</span><br><span class="line">plt.legend(bbox_to_anchor=(<span class="number">1</span>,<span class="number">1</span>))</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+<p><img src="/images/4.png" alt="png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># todo: kd-tree</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>归尘
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://zhaozunhan.github.io/2021/07/17/k%E8%BF%91%E9%82%BB%E6%B3%95/" title="k近邻法">http://zhaozunhan.github.io/2021/07/17/k近邻法/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag"># 机器学习</a>
+              <a href="/tags/k%E8%BF%91%E9%82%BB%E6%B3%95/" rel="tag"># k近邻法</a>
+              <a href="/tags/Python/" rel="tag"># Python</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/15/%E6%84%9F%E7%9F%A5%E6%9C%BA/" rel="prev" title="感知机">
+      <i class="fa fa-chevron-left"></i> 感知机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/18/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/" rel="next" title="朴素贝叶斯">
+      朴素贝叶斯 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#K%E8%BF%91%E9%82%BB%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">K近邻法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-k-%E8%BF%91%E9%82%BB%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">1 $k$近邻算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-k-%E8%BF%91%E9%82%BB%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.</span> <span class="nav-text">2 $k$近邻模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 距离度量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-k-%E5%80%BC%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 $k$值的选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E5%88%86%E7%B1%BB%E5%86%B3%E7%AD%96%E8%A7%84%E5%88%99"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.4 分类决策规则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-kd-%E6%A0%91"><span class="nav-number">1.3.</span> <span class="nav-text">3 $kd$树</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%9E%84%E9%80%A0-kd-%E6%A0%91"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 构造$kd$树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%90%9C%E7%B4%A2-kd-%E6%A0%91"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 搜索$kd$树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">1.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="归尘"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">归尘</p>
+  <div class="site-description" itemprop="description">每天记录一点点</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhaozunhan" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaozunhan" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhaozunhan@126.com" title="E-Mail → mailto:zhaozunhan@126.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">归尘</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

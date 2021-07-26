@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhaozunhan.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一些推理和代码实现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="朴素贝叶斯">
+<meta property="og:url" content="http://zhaozunhan.github.io/2021/07/18/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/index.html">
+<meta property="og:site_name" content="zzh&#39;s blog">
+<meta property="og:description" content="一些推理和代码实现">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-07-18T03:01:30.000Z">
+<meta property="article:modified_time" content="2021-07-19T11:47:24.208Z">
+<meta property="article:author" content="归尘">
+<meta property="article:tag" content="机器学习">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="朴素贝叶斯">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://zhaozunhan.github.io/2021/07/18/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>朴素贝叶斯 | zzh's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zzh's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zhaozunhan.github.io/2021/07/18/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="归尘">
+      <meta itemprop="description" content="每天记录一点点">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zzh's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          朴素贝叶斯
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-07-18 11:01:30" itemprop="dateCreated datePublished" datetime="2021-07-18T11:01:30+08:00">2021-07-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-07-19 19:47:24" itemprop="dateModified" datetime="2021-07-19T19:47:24+08:00">2021-07-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">读书笔记</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">一些推理和代码实现</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="朴素贝叶斯"><a href="#朴素贝叶斯" class="headerlink" title="朴素贝叶斯"></a>朴素贝叶斯</h1><h2 id="1-朴素贝叶斯法的学习与分类"><a href="#1-朴素贝叶斯法的学习与分类" class="headerlink" title="1 朴素贝叶斯法的学习与分类"></a>1 朴素贝叶斯法的学习与分类</h2><h3 id="1-1-基本方法"><a href="#1-1-基本方法" class="headerlink" title="1.1 基本方法"></a>1.1 基本方法</h3><p>​    设$X$是定义在输入空间上的随机向量，$Y$是定义在输出空间上的随机变量。$P(X, Y)$是$X$和$Y$的联合概率分布。训练数据集$T = \{(x_1, y_1), (x_2, y_2), \cdots, (x_N, y_N)\}$由$P(X,Y)$独立同分布产生。</p>
+<p>​    朴素贝叶斯通过训练集学习联合概率分布$P(X, Y)$.具体地，学习以下先验概率分布及条件概率分布。先验概率分布</p>
+<script type="math/tex; mode=display">
+P(Y = c_k), \ k = 1, 2, \cdots, K</script><p>条件概率分布</p>
+<script type="math/tex; mode=display">
+P(X = x|Y = c_k) = P(X ^ {(1)} = x ^ {(1)}, \cdots,X^{(n)} = x ^ {(n)}|Y = c_k), k = 1, 2, \cdots, K</script><p>从而学习联合概率分布。条件概率分布有指数级数量的参数，估计实际是不可行的，因此，朴素贝叶斯对条件概率做了条件独立性的假设，也由此得名。条件独立性的假设是</p>
+<script type="math/tex; mode=display">
+P(X = x|Y = c_k) = \prod _{j = 1} ^{n} P(X ^{(j)} = x^{(j)}|Y = c_k)</script><p>​    朴素贝叶斯学习到的是生成数据的机制，术语生成模型。条件独立假设使朴素贝叶斯变得简单，但有时会牺牲一定的分类准确率。朴素贝叶斯分类时通过学到的模型计算后验概率分布$P(Y = c_k|X = x)$,将后验概率最大的类作为$x$的类输出。后验概率计算根据贝叶斯定理进行：</p>
+<script type="math/tex; mode=display">
+P(Y = c_k|X = x) = \frac{P(X = x|Y = c_k)P(Y = c_k)}{\sum \limits_k P(X = x|Y = c_k)P(Y = c_k)}</script><p>朴素贝叶斯分类器可以表示为</p>
+<script type="math/tex; mode=display">
+y = f(x) = \mathop{argmax} \limits_{c_k} \frac{P(Y = c_k) \prod \limits_j P(X ^{(j)} = x ^{(j)})| Y = c_k)}{ \sum \limits_kP(Y = c_k) \prod \limits_j P(X ^ {(j)} = x ^{(j)} | Y = c_k)}</script><p>又因为所有$c_k$的情况下，分母都相同，可以简化一下，比较分子即可。</p>
+<script type="math/tex; mode=display">
+y = f(x) = \mathop{argmax} \limits_{c_k}P(Y = c_k) \prod \limits_j P(X ^{(j)} = x ^{(j)})| Y = c_k)</script><h3 id="1-2-后验概率最大化的含义"><a href="#1-2-后验概率最大化的含义" class="headerlink" title="1.2 后验概率最大化的含义"></a>1.2 后验概率最大化的含义</h3><p>​    朴素贝叶斯的后验概率最大化等价于期望风险最小化，可以简略证明一下。</p>
+<p>​    假设采用$0 - 1$损失函数</p>
+<script type="math/tex; mode=display">
+\begin{equation}
+L(Y, f(X)) =  \begin{cases}
+1, & Y \not = f(X) \\
+0, & Y = f(X)
+\end{cases}
+\end{equation}</script><p>$f(X)$是分类决策函数。期望风险是</p>
+<script type="math/tex; mode=display">
+R_{exp}(f) = E[L(Y, f(X))]</script><p>期望是对联合分布$P(X, Y)$取的，因此带入式中,可以将离散变量连续化, 从而得到，</p>
+<script type="math/tex; mode=display">
+\begin{align}
+R_{exp}(f) &= \int_{X \times Y} L(Y, f(X)) P(X, Y) dXdY \\
+ &= \int_{X \times Y} L(Y, f(X)) P(Y|X)P(X)dXdY \\
+ &= \int_{}L(Y, f(X))P(Y|X) (\int P(X)dX)dY \\
+ &= EX \int L(Y, f(X))P(Y|X)dY
+\end{align}</script><p>再离散化，可得到</p>
+<script type="math/tex; mode=display">
+R_{exp}(f) = EX \sum_{k = 1} ^K [L(c_k, f(X))]P(c_k|X)</script><p>然后根据期望风险最小化原则</p>
+<script type="math/tex; mode=display">
+\begin{align}
+f(x) &= arg \min_{y \in \mathcal{Y}} \sum _{k = 1} ^ {K} L(c_k, y) P(c_k |X = x) \\
+&= arg \min_{y \in \mathcal{Y}} \sum _{k = 1} ^ {K} L(c_k, y) P(y \not =c_k |X = x) \\
+&= arg \min_{y \in \mathcal{Y}} (1 -  P(y=c_k |X = x) )\\
+&= arg \max_{y \in \mathcal{Y}}P(y = c_k|X = x)
+\end{align}</script><p>也就是后验概率最大化。</p>
+<h2 id="2-朴素贝叶斯的参数估计"><a href="#2-朴素贝叶斯的参数估计" class="headerlink" title="2 朴素贝叶斯的参数估计"></a>2 朴素贝叶斯的参数估计</h2><h3 id="2-1-极大似然估计"><a href="#2-1-极大似然估计" class="headerlink" title="2.1 极大似然估计"></a>2.1 极大似然估计</h3><p>​    在朴素贝叶斯中，学习意味着估计$P(Y = c_k)$和$P(X^{(j)} = x ^{(j)}|Y = c_k)$,可以应用极大似然估计法，用频率代替概率。</p>
+<h3 id="2-2-学习分类算法"><a href="#2-2-学习分类算法" class="headerlink" title="2.2 学习分类算法"></a>2.2 学习分类算法</h3><p>步骤：</p>
+<ol>
+<li>计算先验概率和条件概率</li>
+<li>对于给定的实例$x$，计算$P(Y = c_k) \prod \limits_{j = 1} ^ {n}P(X ^{(j)} = x ^ {(j)} |Y = c_k)$</li>
+<li>取最大，确定Y。</li>
+</ol>
+<h3 id="2-3-贝叶斯估计"><a href="#2-3-贝叶斯估计" class="headerlink" title="2.3 贝叶斯估计"></a>2.3 贝叶斯估计</h3><p>用极大似然估计条件概率和先验概率可能会出现概率为0的情况，这时可以采用贝叶斯估计解决这个问题。</p>
+<script type="math/tex; mode=display">
+P_\lambda(X ^ {(j)} = a_{jl} | Y = c_k) = \frac{\sum \limits_{i = 1} ^ {N} I(x_i ^{(j)} = a_{jl}, y_i = c_k) + \lambda}{\sum \limits_{i = 1} ^{N} I(y_i = c_k) + S_j\lambda}</script><p>$\lambda \geq 0$.$S_j$是$x_j$的可能取值的数量。当$\lambda = 0$时就是极大似然估计。常取$\lambda = 1$,这时称为拉普拉斯平滑(此时是分母加$S_j$,为总数，分子加1，也就是当概率为0时，拉普拉斯平滑就是按照等概率取值)。显然，对任何$l = 1, 2, \cdots, S_j, k = 1, 2, \cdots, K,$,有</p>
+<script type="math/tex; mode=display">
+P_\lambda(x ^ {(j)} = a_{jl} | Y = c_k) > 0\\
+\sum_{l = 1} ^ {S_j} P(X^{(j)} = a_{jl}|Y = c_k) = 1</script><p>先验概率的贝叶斯估计是</p>
+<script type="math/tex; mode=display">
+P_\lambda(Y = c_k) = \frac{\sum \limits_{i = 1} ^ {N} I(y_i = c_k) + \lambda}{N + K\lambda}</script><h4 id="例4-1"><a href="#例4-1" class="headerlink" title="例4.1"></a>例4.1</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Counter</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NaiveBayes</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self</span>):</span></span><br><span class="line">        self.priori_probabililty = &#123;&#125;</span><br><span class="line">        self.conditional_probability = []</span><br><span class="line">        self.x_count = []</span><br><span class="line">        self.y_count = []</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">train</span>(<span class="params">self, data</span>):</span></span><br><span class="line">        y_count = Counter(data[:, <span class="number">2</span>])</span><br><span class="line">        self.y_count = y_count</span><br><span class="line">        sum_num = <span class="built_in">sum</span>([i[<span class="number">1</span>] <span class="keyword">for</span> i <span class="keyword">in</span> y_count.items()])</span><br><span class="line">        self.priori_probability = &#123;i[<span class="number">0</span>]: i[<span class="number">1</span>] / sum_num <span class="keyword">for</span> i <span class="keyword">in</span> y_count.items()&#125;</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;pri&#x27;</span>, self.priori_probability)</span><br><span class="line">        x_count = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(data.shape[<span class="number">1</span>] - <span class="number">1</span>):</span><br><span class="line">            fuck = data[:, [i, <span class="number">2</span>]].tolist()</span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(fuck)):</span><br><span class="line">                fuck[j] = <span class="built_in">tuple</span>(fuck[j])</span><br><span class="line">            x_count += [Counter(fuck)]</span><br><span class="line">        self.x_count = x_count</span><br><span class="line"><span class="comment">#         print(x_count)</span></span><br><span class="line">        self.conditional_probability = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> x_count:</span><br><span class="line">            sum_num = &#123;&#125;</span><br><span class="line">            <span class="keyword">for</span> j <span class="keyword">in</span> i.items():</span><br><span class="line">                <span class="keyword">if</span> j[<span class="number">0</span>][<span class="number">1</span>] <span class="keyword">in</span> sum_num:</span><br><span class="line">                    sum_num[j[<span class="number">0</span>][<span class="number">1</span>]] += j[<span class="number">1</span>]</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    sum_num[j[<span class="number">0</span>][<span class="number">1</span>]] = j[<span class="number">1</span>]</span><br><span class="line"><span class="comment">#             print(sum_num)</span></span><br><span class="line">            temp_probability = &#123;j[<span class="number">0</span>]: j[<span class="number">1</span>] / sum_num[j[<span class="number">0</span>][<span class="number">1</span>]] <span class="keyword">for</span> j <span class="keyword">in</span> i.items()&#125;</span><br><span class="line">            self.conditional_probability += [temp_probability]</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;con&#x27;</span>, self.conditional_probability)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">getlabel</span>(<span class="params">self, x</span>):</span></span><br><span class="line">        ans = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> self.priori_probability.items():</span><br><span class="line">            temp = i[<span class="number">1</span>]</span><br><span class="line">            <span class="keyword">for</span> j, k <span class="keyword">in</span> <span class="built_in">enumerate</span>(self.conditional_probability):</span><br><span class="line">                temp *= k[(<span class="built_in">str</span>(x[j]),i[<span class="number">0</span>])]</span><br><span class="line">            ans[i[<span class="number">0</span>]] = temp  </span><br><span class="line">        <span class="built_in">print</span>(ans)</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">max</span>(ans.items(), key = <span class="keyword">lambda</span> x: x[<span class="number">1</span>])[<span class="number">0</span>]</span><br><span class="line">    </span><br><span class="line">naive_bayes = NaiveBayes()</span><br><span class="line">data = np.array([[<span class="number">1</span>, <span class="string">&#x27;S&#x27;</span>, -<span class="number">1</span>], [<span class="number">1</span>, <span class="string">&#x27;M&#x27;</span>, -<span class="number">1</span>], [<span class="number">1</span>, <span class="string">&#x27;M&#x27;</span>, <span class="number">1</span>], [<span class="number">1</span>, <span class="string">&#x27;S&#x27;</span>, <span class="number">1</span>], [<span class="number">1</span>, <span class="string">&#x27;S&#x27;</span>, -<span class="number">1</span>], [<span class="number">2</span>, <span class="string">&#x27;S&#x27;</span>, -<span class="number">1</span>], [<span class="number">2</span>, <span class="string">&#x27;M&#x27;</span>, -<span class="number">1</span>], [<span class="number">2</span>, <span class="string">&#x27;M&#x27;</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="string">&#x27;L&#x27;</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="string">&#x27;L&#x27;</span>, <span class="number">1</span>], [<span class="number">3</span>, <span class="string">&#x27;L&#x27;</span>, <span class="number">1</span>], [<span class="number">3</span>, <span class="string">&#x27;M&#x27;</span>, <span class="number">1</span>], [<span class="number">3</span>, <span class="string">&#x27;M&#x27;</span>, <span class="number">1</span>], [<span class="number">3</span>, <span class="string">&#x27;L&#x27;</span>, <span class="number">1</span>], [<span class="number">3</span>, <span class="string">&#x27;L&#x27;</span>, -<span class="number">1</span>]])</span><br><span class="line">naive_bayes.train(data)</span><br><span class="line"><span class="built_in">print</span>(naive_bayes.getlabel([<span class="number">2</span>, <span class="string">&#x27;S&#x27;</span>]))</span><br></pre></td></tr></table></figure>
+<pre><code>pri &#123;&#39;-1&#39;: 0.4, &#39;1&#39;: 0.6&#125;
+con [&#123;(&#39;1&#39;, &#39;-1&#39;): 0.5, (&#39;1&#39;, &#39;1&#39;): 0.2222222222222222, (&#39;2&#39;, &#39;-1&#39;): 0.3333333333333333, (&#39;2&#39;, &#39;1&#39;): 0.3333333333333333, (&#39;3&#39;, &#39;1&#39;): 0.4444444444444444, (&#39;3&#39;, &#39;-1&#39;): 0.16666666666666666&#125;, &#123;(&#39;S&#39;, &#39;-1&#39;): 0.5, (&#39;M&#39;, &#39;-1&#39;): 0.3333333333333333, (&#39;M&#39;, &#39;1&#39;): 0.4444444444444444, (&#39;S&#39;, &#39;1&#39;): 0.1111111111111111, (&#39;L&#39;, &#39;1&#39;): 0.4444444444444444, (&#39;L&#39;, &#39;-1&#39;): 0.16666666666666666&#125;]
+&#123;&#39;-1&#39;: 0.06666666666666667, &#39;1&#39;: 0.02222222222222222&#125;
+-1
+</code></pre>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>归尘
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://zhaozunhan.github.io/2021/07/18/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/" title="朴素贝叶斯">http://zhaozunhan.github.io/2021/07/18/朴素贝叶斯/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag"># 机器学习</a>
+              <a href="/tags/Python/" rel="tag"># Python</a>
+              <a href="/tags/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/" rel="tag"># 朴素贝叶斯</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/07/17/k%E8%BF%91%E9%82%BB%E6%B3%95/" rel="prev" title="k近邻法">
+      <i class="fa fa-chevron-left"></i> k近邻法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/07/20/%E5%86%B3%E7%AD%96%E6%A0%91/" rel="next" title="决策树">
+      决策树 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF"><span class="nav-number">1.</span> <span class="nav-text">朴素贝叶斯</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E6%B3%95%E7%9A%84%E5%AD%A6%E4%B9%A0%E4%B8%8E%E5%88%86%E7%B1%BB"><span class="nav-number">1.1.</span> <span class="nav-text">1 朴素贝叶斯法的学习与分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%9F%BA%E6%9C%AC%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.1 基本方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%90%8E%E9%AA%8C%E6%A6%82%E7%8E%87%E6%9C%80%E5%A4%A7%E5%8C%96%E7%9A%84%E5%90%AB%E4%B9%89"><span class="nav-number">1.1.2.</span> <span class="nav-text">1.2 后验概率最大化的含义</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E7%9A%84%E5%8F%82%E6%95%B0%E4%BC%B0%E8%AE%A1"><span class="nav-number">1.2.</span> <span class="nav-text">2 朴素贝叶斯的参数估计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%9E%81%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 极大似然估计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%AD%A6%E4%B9%A0%E5%88%86%E7%B1%BB%E7%AE%97%E6%B3%95"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 学习分类算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E8%B4%9D%E5%8F%B6%E6%96%AF%E4%BC%B0%E8%AE%A1"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 贝叶斯估计</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B4-1"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">例4.1</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="归尘"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">归尘</p>
+  <div class="site-description" itemprop="description">每天记录一点点</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhaozunhan" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhaozunhan" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:zhaozunhan@126.com" title="E-Mail → mailto:zhaozunhan@126.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">归尘</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
